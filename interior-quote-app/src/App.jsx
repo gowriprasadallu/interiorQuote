@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, Printer, Download, Trash2, GripVertical, FileText, Save, RefreshCw, XCircle, LogOut, Loader2 } from 'lucide-react';
+import { Plus, Printer, Download, Trash2, GripVertical, FileText, Save, RefreshCw, XCircle, LogOut, Loader2, List, Grid } from 'lucide-react';
 import { formatCurrency, parseNumber } from './utils/format';
 import { INITIAL_SECTIONS, CLIENT_DETAILS } from './data/initialData';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { supabase } from './lib/supabase';
-import Auth from './components/Auth';
+// import Auth from './components/Auth';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -25,29 +25,30 @@ function App() {
   // 1. Auth & Initial Load
   useEffect(() => {
     // Timeout to ensure we don't get stuck in loading state if Supabase fails
-    const timer = setTimeout(() => setLoading(false), 2000);
+    // const timer = setTimeout(() => setLoading(false), 2000);
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session) {
-        loadUserData(session.user.id);
-      } else {
-        setLoading(false);
-      }
-      clearTimeout(timer);
-    }).catch(err => {
-      console.error("Auth check failed", err);
-      setLoading(false);
-    });
+    // supabase.auth.getSession().then(({ data: { session } }) => {
+    //   setSession(session);
+    //   if (session) {
+    //     loadUserData(session.user.id);
+    //   } else {
+    //     setLoading(false);
+    //   }
+    //   clearTimeout(timer);
+    // }).catch(err => {
+    //   console.error("Auth check failed", err);
+    //   setLoading(false);
+    // });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (!session) setLoading(false);
-    });
+    // const {
+    //   data: { subscription },
+    // } = supabase.auth.onAuthStateChange((_event, session) => {
+    //   setSession(session);
+    //   if (!session) setLoading(false);
+    // });
 
-    return () => subscription.unsubscribe();
+    // return () => subscription.unsubscribe();
+    setLoading(false);
   }, []);
 
   // 2. Load Data from Supabase
@@ -278,62 +279,70 @@ function App() {
     );
   }
 
-  if (!session) {
-    return <Auth />;
-  }
+  // if (!session) {
+  //   return <Auth />;
+  // }
 
   return (
     <div className="min-h-screen pb-32">
-      {/* Premium Glass Header - Static */}
+      {/* Premium Glass Header - Sticky */}
       <nav className="glass-panel z-50 relative sticky top-0">
-        <div className="container mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#ca8a04] to-[#facc15] rounded-xl flex items-center justify-center text-white font-bold shadow-lg transform rotate-3">
-              Q
+        <div className="container mx-auto px-6 flex items-center justify-between" style={{ minHeight: '5rem' }}>
+
+          {/* Logo Section */}
+          <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-[#ca8a04] to-[#facc15] rounded-xl flex items-center justify-center text-white font-bold shadow-lg transform rotate-3">
+                Q
+              </div>
+              <div>
+                <span className="font-bold text-2xl tracking-tight text-[#0f172a] font-serif">Interior<span className="text-[#ca8a04]">Quote</span></span>
+                {saveStatus === 'saving' && <span className="hidden md:inline-block ml-3 text-xs text-gray-500 animate-pulse">Saving...</span>}
+                {saveStatus === 'saved' && <span className="hidden md:inline-block ml-3 text-xs text-green-600">Saved</span>}
+              </div>
             </div>
-            <div>
-              <span className="font-bold text-2xl tracking-tight text-[#0f172a] font-serif">Interior<span className="text-[#ca8a04]">Quote</span></span>
-              {saveStatus === 'saving' && <span className="ml-3 text-xs text-gray-500 animate-pulse">Saving...</span>}
-              {saveStatus === 'saved' && <span className="ml-3 text-xs text-green-600">All changes saved</span>}
-              {saveStatus === 'error' && <span className="ml-3 text-xs text-red-500">Error saving</span>}
-            </div>
+
+            {/* Mobile Actions Toggle (could be improved, but stacking for now) */}
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* Action Buttons */}
+          <div className="flex flex-wrap items-center gap-2 md:gap-3 justify-center md:justify-end w-full md:w-auto mt-3 md:mt-0">
             <button
               onClick={saveData}
-              className="btn btn-outline text-xs px-3 mr-2"
+              className="btn btn-outline text-xs px-3"
               title="Save to Cloud"
             >
-              <Save size={16} className="mr-1" /> Save
+              <Save size={16} className="mr-1" /> <span className="hidden sm:inline">Save</span>
             </button>
 
             {!isPreviewMode && (
               <>
-                <button onClick={handleReset} className="btn btn-outline text-xs px-3" title="Reset to Defaults">
+                <button onClick={handleReset} className="btn btn-outline text-xs px-3" title="Reset">
                   <RefreshCw size={14} />
                 </button>
-                <button onClick={handleClear} className="btn btn-outline text-xs px-3 text-red-500 border-red-200 hover:bg-red-50 hover:border-red-300" title="Clear All">
+                <button onClick={handleClear} className="btn btn-outline text-xs px-3 text-red-500 border-red-200 hover:bg-red-50 hover:border-red-300" title="Clear">
                   <XCircle size={14} />
                 </button>
-                <div className="h-8 w-[1px] bg-gray-200 mx-2"></div>
+                <div className="hidden md:block h-8 w-[1px] bg-gray-200 mx-2"></div>
               </>
             )}
 
             <button
               onClick={() => setIsPreviewMode(!isPreviewMode)}
-              className={`btn ${isPreviewMode ? 'btn-outline' : 'btn-primary'}`}
+              className={`btn ${isPreviewMode ? 'btn-outline' : 'btn-primary'} flex-1 md:flex-none justify-center`}
             >
-              {isPreviewMode ? 'Back to Editor' : 'Preview Quote'}
+              {isPreviewMode ? 'Edit' : 'Preview'}
             </button>
+
             {isPreviewMode && (
-              <button onClick={handleExportPDF} className="btn btn-accent shadow-lg shadow-yellow-500/20">
-                <Download size={18} /> Download PDF
+              <button onClick={handleExportPDF} className="btn btn-accent shadow-lg shadow-yellow-500/20 flex-1 md:flex-none justify-center">
+                <Download size={18} /> <span className="hidden sm:inline">PDF</span>
               </button>
             )}
+
             <button
               onClick={handleSignOut}
-              className="ml-4 text-gray-400 hover:text-gray-600"
+              className="ml-2 text-gray-400 hover:text-gray-600 hidden md:block" // Hidden on mobile for space
               title="Sign Out"
             >
               <LogOut size={20} />
@@ -342,7 +351,7 @@ function App() {
         </div>
       </nav>
 
-      <main className="container mx-auto px-6 py-10">
+      <main className="container mx-auto px-4 md:px-6 py-6 md:py-10">
 
         {/* Editor Mode */}
         {!isPreviewMode && (
@@ -354,7 +363,7 @@ function App() {
                 <FileText className="text-[#ca8a04]" size={24} />
                 Project Details
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 gap-6 md:gap-8">
                 <div>
                   <label className="label">Client Name</label>
                   <input
@@ -405,53 +414,57 @@ function App() {
             {/* Sections */}
             <div className="space-y-8">
               {sections.map((section, sIndex) => (
-                <div key={section.id} className="card animate-fade-in group hover:border-[#ca8a04]/30 transition-colors duration-300" style={{ animationDelay: `${sIndex * 100}ms` }}>
+                <div key={section.id} className="card animate-fade-in group hover:border-[#ca8a04]/30 transition-colors duration-300 p-0 overflow-hidden" style={{ animationDelay: `${sIndex * 100}ms` }}>
                   {/* Section Header */}
-                  <div className="bg-gray-50 p-5 border-b border-gray-100 grid grid-cols-3 items-center">
-                    {/* Left: Number */}
-                    <div className="flex items-center gap-4 justify-start">
-                      <div className="w-8 h-8 rounded-lg bg-[#fefce8] border border-[#fef08a] text-[#854d0e] flex items-center justify-center font-bold text-sm shadow-sm">
+                  <div className="bg-gray-50 p-4 md:p-5 border-b border-gray-100 flex flex-col md:flex-row items-center gap-4">
+
+                    {/* Top Row on Mobile: Number + Delete */}
+                    <div className="w-full md:w-auto flex items-center justify-between md:justify-start gap-4">
+                      <div className="w-8 h-8 rounded-lg bg-[#fefce8] border border-[#fef08a] text-[#854d0e] flex items-center justify-center font-bold text-sm shadow-sm shrink-0">
                         {sIndex + 1}
                       </div>
+                      <button onClick={() => removeSection(section.id)} className="btn-danger-ghost md:hidden" title="Delete Section">
+                        <Trash2 size={18} />
+                      </button>
                     </div>
 
                     {/* Center: Title Input */}
-                    <div className="flex justify-center w-full">
+                    <div className="flex-1 w-full relative">
                       <input
                         type="text"
                         value={section.name}
                         onChange={(e) => updateSectionName(section.id, e.target.value)}
-                        className="input-section-title"
+                        className="input-section-title text-center md:text-left"
                         placeholder="SECTION NAME"
                         title={section.name}
                       />
                     </div>
 
-                    {/* Right: Actions */}
-                    <div className="flex items-center gap-6 justify-end">
-                      <div className="text-right">
+                    {/* Right: Actions (Desktop) / Subtotal (Mobile) */}
+                    <div className="flex items-center justify-between w-full md:w-auto gap-6">
+                      <div className="flex items-center gap-2 md:block md:text-right w-full md:w-auto justify-between">
                         <p className="text-xs text-gray-400 uppercase font-semibold tracking-wider">Subtotal</p>
                         <p className="text-lg font-bold text-[#ca8a04]">{formatCurrency(calculateSectionTotal(section))}</p>
                       </div>
-                      <button onClick={() => removeSection(section.id)} className="btn-danger-ghost" title="Delete Section">
+                      <button onClick={() => removeSection(section.id)} className="hidden md:flex btn-danger-ghost" title="Delete Section">
                         <Trash2 size={18} />
                       </button>
                     </div>
                   </div>
 
-                  {/* Items Table */}
-                  <div className="p-0 overflow-x-auto">
-                    <table className="premium-table">
+                  {/* Items Table - Horizontal Scroll on Small Screens */}
+                  <div className="desktop-table-view table-responsive-wrapper">
+                    <table className="premium-table min-w-[800px] md:min-w-full">
                       <thead>
                         <tr>
-                          <th className="w-12 text-center">#</th>
-                          <th className="w-[30%]">Item Description</th>
-                          <th className="w-28 text-center">Width</th>
-                          <th className="w-24 text-center">Height</th>
-                          <th className="w-24 text-center">Depth</th>
-                          <th className="w-32 text-center">Unit</th>
-                          <th className="w-32 text-right">Rate (₹)</th>
-                          <th className="w-32 text-right">Amount</th>
+                          <th className="w-10 text-center">#</th>
+                          <th className="w-[30%] min-w-[200px]">Item Description</th>
+                          <th className="w-20 text-center">W</th>
+                          <th className="w-20 text-center">H</th>
+                          <th className="w-20 text-center">D</th>
+                          <th className="w-24 text-center">Unit</th>
+                          <th className="w-28 text-right">Rate</th>
+                          <th className="w-28 text-right">Amount</th>
                           <th className="w-12"></th>
                         </tr>
                       </thead>
@@ -465,13 +478,13 @@ function App() {
                                 value={item.description}
                                 onChange={(e) => updateItem(section.id, item.id, 'description', e.target.value)}
                                 className="table-input"
-                                placeholder="Item description"
+                                placeholder="Description"
                                 title={item.description}
                               />
                             </td>
-                            <td><input type="number" value={item.width} onChange={(e) => updateItem(section.id, item.id, 'width', e.target.value)} className="table-input text-center" /></td>
-                            <td><input type="number" value={item.height} onChange={(e) => updateItem(section.id, item.id, 'height', e.target.value)} className="table-input text-center" /></td>
-                            <td><input type="number" value={item.depth} onChange={(e) => updateItem(section.id, item.id, 'depth', e.target.value)} className="table-input text-center" /></td>
+                            <td><input type="number" value={item.width} onChange={(e) => updateItem(section.id, item.id, 'width', e.target.value)} className="table-input text-center" placeholder="0" /></td>
+                            <td><input type="number" value={item.height} onChange={(e) => updateItem(section.id, item.id, 'height', e.target.value)} className="table-input text-center" placeholder="0" /></td>
+                            <td><input type="number" value={item.depth} onChange={(e) => updateItem(section.id, item.id, 'depth', e.target.value)} className="table-input text-center" placeholder="0" /></td>
                             <td>
                               <select
                                 value={item.unit}
@@ -484,14 +497,14 @@ function App() {
                                 <option value="ls">L.S</option>
                               </select>
                             </td>
-                            <td><input type="number" value={item.rate} onChange={(e) => updateItem(section.id, item.id, 'rate', e.target.value)} className="table-input text-right" /></td>
+                            <td><input type="number" value={item.rate} onChange={(e) => updateItem(section.id, item.id, 'rate', e.target.value)} className="table-input text-right" placeholder="0" /></td>
                             <td className="text-right font-semibold text-gray-800">
                               {formatCurrency(calculateItemTotal(item))}
                             </td>
                             <td className="text-center">
                               <button
                                 onClick={() => removeItem(section.id, item.id)}
-                                className="btn-delete-row mx-auto opacity-0 group-hover/row:opacity-100"
+                                className="btn-delete-row mx-auto opacity-100 lg:opacity-0 group-hover/row:opacity-100"
                               >
                                 <Trash2 size={16} />
                               </button>
@@ -500,48 +513,146 @@ function App() {
                         ))}
                       </tbody>
                     </table>
+                  </div>
 
-                    <div className="p-4 bg-gray-50 border-t border-gray-100">
-                      <button
-                        onClick={() => addItem(section.id)}
-                        className="btn-add-item"
-                      >
-                        <Plus size={18} /> Add New Item
-                      </button>
-                    </div>
+                  {/* Mobile Card View for Items */}
+                  <div className="mobile-card-view space-y-4 p-4">
+                    {section.items.map((item, iIndex) => (
+                      <div key={item.id} className="mobile-item-card">
+                        <div className="mobile-item-badge">
+                          {iIndex + 1}
+                        </div>
+
+                        <div>
+                          <label className="label text-[10px] mb-1">Description</label>
+                          <input
+                            type="text"
+                            value={item.description}
+                            onChange={(e) => updateItem(section.id, item.id, 'description', e.target.value)}
+                            className="input w-full p-2 text-sm"
+                            placeholder="Item Description"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3">
+                          <div>
+                            <label className="label text-[10px] text-center mb-1">Width</label>
+                            <input
+                              type="number"
+                              value={item.width}
+                              onChange={(e) => updateItem(section.id, item.id, 'width', e.target.value)}
+                              className="input text-center p-2 text-sm"
+                              placeholder="0"
+                            />
+                          </div>
+                          <div>
+                            <label className="label text-[10px] text-center mb-1">Height</label>
+                            <input
+                              type="number"
+                              value={item.height}
+                              onChange={(e) => updateItem(section.id, item.id, 'height', e.target.value)}
+                              className="input text-center p-2 text-sm"
+                              placeholder="0"
+                            />
+                          </div>
+                          <div>
+                            <label className="label text-[10px] text-center mb-1">Depth</label>
+                            <input
+                              type="number"
+                              value={item.depth}
+                              onChange={(e) => updateItem(section.id, item.id, 'depth', e.target.value)}
+                              className="input text-center p-2 text-sm"
+                              placeholder="0"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="label text-[10px] mb-1">Unit</label>
+                            <select
+                              value={item.unit}
+                              onChange={(e) => updateItem(section.id, item.id, 'unit', e.target.value)}
+                              className="input w-full p-2 text-sm"
+                            >
+                              <option value="sft">Sft</option>
+                              <option value="rft">Rft</option>
+                              <option value="nos">Nos</option>
+                              <option value="ls">L.S</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="label text-[10px] mb-1">Rate</label>
+                            <input
+                              type="number"
+                              value={item.rate}
+                              onChange={(e) => updateItem(section.id, item.id, 'rate', e.target.value)}
+                              className="input text-right p-2 text-sm"
+                              placeholder="0"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                          <div className="flex flex-col">
+                            <span className="text-[10px] uppercase font-bold text-gray-400">Total Amount</span>
+                            <span className="text-lg font-bold text-[#ca8a04]">{formatCurrency(calculateItemTotal(item))}</span>
+                          </div>
+                          <button
+                            onClick={() => removeItem(section.id, item.id)}
+                            className="bg-red-50 text-red-500 p-2 rounded-lg hover:bg-red-100 transition-colors"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="p-4 bg-gray-50 border-t border-gray-100">
+                    <button
+                      onClick={() => addItem(section.id)}
+                      className="btn-add-item"
+                    >
+                      <Plus size={18} /> Add New Item
+                    </button>
                   </div>
                 </div>
               ))}
 
               <div className="flex justify-center pt-8 pb-32">
-                <button onClick={addSection} className="btn btn-primary px-8 text-lg rounded-full shadow-2xl hover:scale-105 transition-transform">
-                  <Plus size={24} /> Add New Section
+                <button onClick={addSection} className="btn btn-primary px-8 text-lg rounded-full shadow-2xl hover:scale-105 transition-transform w-full md:w-auto justify-center">
+                  <Plus size={24} /> Add Section
                 </button>
               </div>
             </div>
 
-            {/* Bottom Calculation Bar - Fixed */}
-            <div className="fixed bottom-8 left-0 right-0 z-40 pointer-events-none">
-              <div className="container mx-auto px-6">
-                <div className="bg-[#1e293b] text-white p-6 rounded-2xl shadow-premium flex items-center justify-between pointer-events-auto shadow-2xl">
-                  <button
-                    onClick={() => setIsPreviewMode(true)}
-                    className="btn btn-accent rounded-xl px-8 shadow-lg shadow-yellow-500/20 hover:scale-105 transition-transform"
-                  >
-                    <FileText size={18} className="mr-2" /> Review & Download Quote
-                  </button>
+            {/* Bottom Calculation Bar - Responsive */}
+            <div className="fixed bottom-4 md:bottom-8 left-0 right-0 z-40">
+              <div className="container mx-auto px-4 md:px-6">
+                <div className="bg-[#1e293b] text-white p-4 md:p-6 rounded-2xl shadow-premium flex flex-col md:flex-row items-center justify-between pointer-events-auto shadow-2xl gap-4">
 
-                  <div className="flex items-center gap-8 px-4 text-right">
-                    <div className="flex flex-col items-end">
-                      <p className="text-gray-400 text-xs uppercase tracking-wider font-semibold">Total Sections</p>
-                      <p className="text-2xl font-bold">{sections.length}</p>
+                  {/* Total Display (Swap order for mobile importance) */}
+                  <div className="flex items-center justify-between w-full md:w-auto gap-4 md:gap-8 px-2 md:px-4 order-1 md:order-2">
+                    <div className="hidden md:flex flex-col items-end">
+                      <p className="text-gray-400 text-xs uppercase tracking-wider font-semibold">Items</p>
+                      <p className="text-xl md:text-2xl font-bold">{sections.length}</p>
                     </div>
-                    <div className="h-10 w-[1px] bg-gray-700"></div>
-                    <div className="flex flex-col items-end">
-                      <p className="text-[#fbbf24] text-xs uppercase tracking-wider font-semibold">Grand Total Estimate</p>
-                      <p className="text-3xl font-bold font-serif text-[#fbbf24]">{formatCurrency(calculateGrandTotal())}</p>
+                    <div className="hidden md:block h-10 w-[1px] bg-gray-700"></div>
+                    <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-4">
+                      <p className="text-[#fbbf24] text-xs uppercase tracking-wider font-semibold">Total Estimate</p>
+                      <p className="text-2xl md:text-3xl font-bold font-serif text-[#fbbf24]">{formatCurrency(calculateGrandTotal())}</p>
                     </div>
                   </div>
+
+                  {/* Review Button */}
+                  <button
+                    onClick={() => setIsPreviewMode(true)}
+                    className="btn btn-accent w-full md:w-auto justify-center rounded-xl px-8 shadow-lg shadow-yellow-500/20 hover:scale-105 transition-transform order-2 md:order-1"
+                  >
+                    <FileText size={18} className="mr-2" /> Review Quote
+                  </button>
+
                 </div>
               </div>
             </div>
@@ -551,7 +662,8 @@ function App() {
         {/* Preview Mode */}
         {isPreviewMode && (
           <div className="flex justify-center animate-fade-in pb-20">
-            <div className="bg-gray-100 p-8 rounded-xl overflow-auto max-w-full shadow-inner">
+            <div className="w-full overflow-hidden flex justify-center">
+              {/* Responsive Wrapper around print-container handled by CSS Scale */}
 
               {/* Actual Printable Area */}
               <div ref={printRef} className="print-container">
